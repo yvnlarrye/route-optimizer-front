@@ -37,8 +37,9 @@ loadConfig().then(config => {
             response.errors.forEach(error => {
                 errorOutput += '<i class="bi bi-dot me-2"></i>' + error + '.<br>'
             });
-
             errorMessageElement.innerHTML = errorOutput
+        } else if (request.status == 409) {
+            errorMessageElement.innerHTML = "Пользователь с таким именем уже зарегистрирован"
         }
     })
 
