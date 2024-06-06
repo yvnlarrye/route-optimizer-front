@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             }
         })
         if (response.ok) {
-            localStorage.removeItem("token");
+            localStorage.clear()
         } else {
             console.error('Ошибка при запросе на logout');
         }
