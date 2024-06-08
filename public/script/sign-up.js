@@ -10,7 +10,6 @@ loadConfig().then(config => {
     const passwordInput = document.getElementById("password")
     const usernameInput = document.getElementById("username")
     const repeatPassword = document.getElementById("repeatPassword")
-    const passCheckerMessage = document.getElementById("passCheckerMessage")
 
     let errorMessageElement = document.getElementById("err_msg")
     const BAD_REQUEST = 400
@@ -35,7 +34,7 @@ loadConfig().then(config => {
         } else if (request.status === BAD_REQUEST) {
             let errorOutput = ""
             response.errors.forEach(error => {
-                errorOutput += '<i class="bi bi-dot me-2"></i>' + error + '.<br>'
+                errorOutput += error + '.<br>'
             });
             errorMessageElement.innerHTML = errorOutput
         } else if (request.status == 409) {
@@ -52,10 +51,9 @@ loadConfig().then(config => {
     })
 
     repeatPassword.addEventListener("change", () => {
-        if ((passwordInput.value == repeatPassword.value)) {
-            passCheckerMessage.innerText = ""
-        } else {
-            passCheckerMessage.innerText = "Пароли не совпадают"
+        errorMessageElement.innerHTML = null
+        if (passwordInput.value != repeatPassword.value) {
+            errorMessageElement.innerHTML += "Пароли не совпадают<br>"
         }
     })
 

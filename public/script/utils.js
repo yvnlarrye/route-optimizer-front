@@ -23,3 +23,15 @@ export async function getCurrentUser() {
     }
     return null
 }
+
+export function getRandomColor() {
+    let r = Math.floor(Math.random() * 256);
+    let g = Math.floor(Math.random() * 256);
+    let b = Math.floor(Math.random() * 256);
+
+    let rHex = r.toString(16).padStart(2, '0');
+    let gHex = g.toString(16).padStart(2, '0');
+    let bHex = b.toString(16).padStart(2, '0');
+
+    return rHex + gHex + bHex;
+}

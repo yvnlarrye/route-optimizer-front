@@ -24,6 +24,8 @@
     <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
     <script src="/script/jquery.fias/jquery.fias.min.js" type="text/javascript"></script>
     <script src="/script/address-autocomplete.js" type="text/javascript"></script>
+    
+    <script src="https://api-maps.yandex.ru/2.1/?apikey=0bfeec7e-599c-470e-9810-b529e52345e1&lang=ru_RU"></script>
 
   </head>
 
@@ -69,15 +71,18 @@
                 <i class="bi bi-info-circle"></i>
                 <span>Минимальное количество адресов: 3</span>
               </div>
-              <button id="optimize-btn" type="button" class="mt-2 me-5 px-4 btn btn-outline-light border border-white border-3 rounded-pill">
-                <span>Оптимизировать маршрут</span>
-                <i class="bi bi-capslock"></i>
-              </button>
+              <div class="d-flex align-items-center">
+                <div id="processing-spinner" class="me-4 d-flex align-items-center"></div>
+                <button id="optimize-btn" type="button" class="me-5 px-4 btn btn-outline-light border border-white border-3 rounded-pill">
+                  <span>Оптимизировать маршрут</span>
+                  <i class="bi bi-capslock"></i>
+                </button>
+              </div>
             </div>
-
             <div class="mt-2 text-danger" id="err-message"></div>
           </div>
         </div>
+        <div class="wrapper my-5 py-5 container w-75" id="solution-area"></div>
       </main>
     </div>
 

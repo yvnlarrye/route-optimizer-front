@@ -1,11 +1,8 @@
 import { loadConfig } from "./utils.js"
+import { getRandomColor } from "./utils.js"
 
 const addAddressBtn = document.getElementById('add-address-btn')
-const confirmAddressBtn = document.getElementById('confirm-address-btn')
-
 const addressInput = document.querySelector('input[name="address"]')
-
-let checkedProblemType = document.querySelector('input[name="problem-type"]:checked')
 const tspProblemRadio = document.getElementById("tsp-problem")
 const cvrpProblemRadio = document.getElementById("cvrp-problem")
 
@@ -126,8 +123,8 @@ function validateVehicles() {
 }
 
 function validateAddresses() {
-    let addresses = localStorage.getItem('addresses')
-    if (!addresses || addresses.length == 0) {
+    let addresses = JSON.parse(localStorage.getItem('addresses'))
+    if (!addresses || addresses.length == 0 || addresses.length < 3) {
         throw new Error('Необходимо добавить хотя бы 3 адреса')
     }
 }
@@ -137,15 +134,22 @@ function addressesListForRequest() {
     let addressesList = JSON.parse(addressesListJson)
     let result = []
     addressesList.forEach(addrStr => {
-        result.push({address: addrStr})
+        result.push({ full_address: addrStr })
     })
 
     return result
 }
 
+
 async function solveTSP() {
+    let processingSpinner = document.getElementById('processing-spinner')
+    processingSpinner.innerHTML = `
+        <div class="spinner-border text-light" role="status">
+            <span class="visually-hidden"></span>
+        </div>
+    `
     const config = await loadConfig()
-    const response = await fetch(`${config.spring_app_address}/api/v1/optimize/tsp`, {
+    const response = await fetch(`${config.spring_app_address}/api/v1/find/tsp`, {
         method: 'POST',
         headers: {
             "Content-Type": "application/json",
@@ -158,6 +162,7 @@ async function solveTSP() {
         })
     });
 
+    processingSpinner.innerHTML = null
     if (response.ok) {
         return await response.json();
     }
@@ -172,7 +177,7 @@ function validateChoosenDepot() {
 
 function validateCvrpInputs() {
     let errors = []
-        
+
     document.querySelectorAll('.demand').forEach(demand => {
         if (demand.value == null || demand.value == '') {
             errors.push('Укажите количество поставок для всех адресов.')
@@ -198,9 +203,14 @@ function validateCvrpInputs() {
 
 async function solveCVRP() {
     validateCvrpInputs()
-
+    let processingSpinner = document.getElementById('processing-spinner')
+    processingSpinner.innerHTML = `
+        <div class="spinner-border text-light" role="status">
+            <span class="visually-hidden"></span>
+        </div>
+    `
     const config = await loadConfig()
-    const response = await fetch(`${config.spring_app_address}/api/v1/optimize/cvrp`, {
+    const response = await fetch(`${config.spring_app_address}/api/v1/find/cvrp`, {
         method: 'POST',
         headers: {
             "Content-Type": "application/json",
@@ -216,10 +226,82 @@ async function solveCVRP() {
         })
     });
 
+    processingSpinner.innerHTML = null
     if (response.ok) {
         return await response.json();
     }
     throw new Error('Не удалось решить CVRP. Попробуйте указать другие данные.')
+}
+
+
+
+async function initMap(solution) {
+    ymaps.ready(init);
+
+    function init() {
+        let centerCoords = solution.routes[0].nodes[0].location
+        var myMap = new ymaps.Map("map", {
+            center: [centerCoords.lat, centerCoords.lon],
+            zoom: 10
+        });
+
+        solution.routes.forEach(route => {
+            var placemarks = [];
+
+            let currentRouteColor = getRandomColor()
+
+            route.nodes.forEach((node, index) => {
+                let coords = [node.location.lat, node.location.lon];
+                var placemark = new ymaps.Placemark(coords, {
+                    iconContent: (index + 1).toString()
+                }, {
+                    preset: 'islands#blueCircleIconWithCaption',
+                    iconColor: currentRouteColor
+                });
+
+                placemarks.push(coords);
+                if (index != route.nodes.length - 1) {
+                    myMap.geoObjects.add(placemark);
+                }
+            });
+
+            var multiRoute = new ymaps.multiRouter.MultiRoute({
+                referencePoints: placemarks,
+                params: {
+                    routingMode: 'auto'
+                }
+            }, {
+                wayPointStartIconLayout: 'default#image',
+                wayPointFinishIconLayout: 'default#image',
+                wayPointIconLayout: 'default#image',
+                wayPointStartIconImageHref: '',
+                wayPointFinishIconImageHref: '',
+                wayPointIconImageHref: '',
+                routeStrokeWidth: 5,
+                routeActiveStrokeColor: currentRouteColor
+            });
+
+            myMap.geoObjects.add(multiRoute);
+        })
+    }
+
+}
+
+function handleSolution(solution) {
+    let solutionArea = document.getElementById('solution-area')
+    solutionArea.innerHTML = `
+        <h1 class="text-white text-center py-3">Результаты</h1>
+        <div id="map-container">
+            <div id="map" style="width: 600px; height: 600px" class="w-100 px-5"></div>
+        </div>
+        <div class="my-4 w-100 d-flex justify-content-center">
+            <button type="button" class="btn btn-outline-light d-flex align-items-center px-5 border border-white border-3 rounded-pill">
+                <i class="bi bi-filetype-xlsx fs-2 me-3"></i>
+                <span class="fs-5">Скачать решение</span>
+            </button>
+        </div>
+    `
+    initMap(solution)
 }
 
 
@@ -232,11 +314,14 @@ async function listenOptimizeRouteBtn() {
             validateAddresses()
             validateChoosenDepot()
             if (tspProblemRadio.checked) {
-                await solveTSP()
+                var solution = await solveTSP()
             } else if (cvrpProblemRadio.checked) {
                 validateCvrpInputs()
-                await solveCVRP()
+                var solution = await solveCVRP()
             }
+
+            handleSolution(solution)
+
         } catch (err) {
             errMessage.innerHTML = `
                 <i class="bi bi-exclamation-octagon me-1"></i>
