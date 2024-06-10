@@ -26,6 +26,10 @@ app.get('/route-optimizer', (req, res) => {
 	res.sendFile(path.join(__dirname, 'public', 'templates', 'route-optimizer.html'));
 });
 
+app.get('/saved', (req, res) => {
+	res.sendFile(path.join(__dirname, 'public', 'templates', 'saved-routes.html'));
+});
+
 app.listen(port, () => {
 	console.log(`Server is running on http://localhost:${port}`);
 });
