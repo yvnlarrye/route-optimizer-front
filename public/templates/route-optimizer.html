@@ -42,7 +42,7 @@
                 <div id="one_string">
                   <div class="mb-3">
                     <label class="form-label">Адрес</label>
-                    <input name="address" type="text" class="w-100 form-control border-white bg-black border border-light border-3 rounded-pill text-white" id="city">
+                    <input id="address" type="text" class="w-100 form-control border-white bg-black border border-light border-3 rounded-pill text-white">
                   </div>
                   <div class="tooltip" style="display: none;"><b></b><span></span></div>
                   <button id="add-address-btn" type="button" class="mt-2 fs-5 btn btn-outline-primary w-100 border border-primary border-3 rounded-pill">
@@ -51,11 +51,24 @@
                   </button>
                 </div>
                 <div class="mt-5">
-                  <input type="radio" class="btn-check" name="problem-type" id="tsp-problem" autocomplete="off" checked>
-                  <label class="fs-5 btn btn-outline-light px-4 border border-light border-2 rounded-pill" for="tsp-problem">TSP</label>
+                  <label class="form-label">Тип задачи</label>
+                  <div class="">
+                    <input type="radio" class="btn-check" name="problem-type" id="tsp-problem" autocomplete="off" checked>
+                    <label class="fs-5 btn btn-outline-light px-4 border border-light border-2 rounded-pill" for="tsp-problem">TSP</label>
 
-                  <input type="radio" class="btn-check" name="problem-type" id="cvrp-problem" autocomplete="off">
-                  <label class="fs-5 btn btn-outline-light px-4 border border-light border-2 rounded-pill" for="cvrp-problem">CVRP</label>
+                    <input type="radio" class="btn-check" name="problem-type" id="cvrp-problem" autocomplete="off">
+                    <label class="fs-5 btn btn-outline-light px-4 border border-light border-2 rounded-pill" for="cvrp-problem">CVRP</label>
+                  </div>
+                </div>
+                <div class="mt-4">
+                  <label class="form-label">Критерий оптимизации</label>
+                  <div>
+                    <input value="DISTANCES" type="radio" class="btn-check" name="optimization-type" id="distance-optimization" autocomplete="off" checked>
+                    <label class="fs-5 btn btn-outline-light px-4 border border-light border-2 rounded-pill" for="distance-optimization">По расстоянию</label>
+
+                    <input value="DURATIONS" type="radio" class="btn-check" name="optimization-type" id="duration-optimization" autocomplete="off">
+                    <label class="fs-5 btn btn-outline-light px-4 border border-light border-2 rounded-pill" for="duration-optimization">По времени</label>
+                  </div>
                 </div>
                 <div id="cvrp-data"></div>
               </div>

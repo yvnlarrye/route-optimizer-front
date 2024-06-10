@@ -25,7 +25,7 @@ async function displayUserInfo() {
             
                 <ul class="dropdown-menu">
                     <li><a class="dropdown-item" href="/route-optimizer">Рассчитать маршрут</a></li>
-                    <li><a class="dropdown-item" href="/fav-routes">Сохраненные маршруты</a></li>
+                    <li><a class="dropdown-item" href="/saved">Сохраненные маршруты</a></li>
                     <li><a class="dropdown-item" href="/logout">Выйти</a></li>
                 </ul>
             </div>

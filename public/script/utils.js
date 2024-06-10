@@ -1,4 +1,3 @@
-
 export async function loadConfig() {
     const response = await fetch('/config.json');
     if (response.ok) {
@@ -25,13 +24,45 @@ export async function getCurrentUser() {
 }
 
 export function getRandomColor() {
-    let r = Math.floor(Math.random() * 256);
-    let g = Math.floor(Math.random() * 256);
-    let b = Math.floor(Math.random() * 256);
+    const letters = '0123456789ABCDEF';
+    let color = '#';
+    for (let i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+}
 
-    let rHex = r.toString(16).padStart(2, '0');
-    let gHex = g.toString(16).padStart(2, '0');
-    let bHex = b.toString(16).padStart(2, '0');
+export function getUniqueFilename(userId) {
+    const timestamp = Date.now();
+    return `solution_${timestamp}_${userId}.xlsx`;
+}
 
-    return rHex + gHex + bHex;
+export async function downloadFile() {
+    const config = await loadConfig()
+    const response = await fetch(`${config.spring_app_address}/api/v1/solution/download`, {
+        method: 'POST',
+        headers: {
+            "Content-Type": "application/json",
+            "Accept": "*/*",
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({
+            name: null,
+            solutionJson: document.getElementById("save-solution-btn").value.replace('&quot;', /"/g)
+        })
+    });
+
+    if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute('download', 'solution.xlsx');
+
+        document.body.appendChild(link);
+        link.click();
+
+        window.URL.revokeObjectURL(url);
+    }
 }

@@ -1,8 +1,10 @@
 import { loadConfig } from "./utils.js"
 import { getRandomColor } from "./utils.js"
+import { getUniqueFilename } from "./utils.js"
+import { downloadFile } from "./utils.js"
 
 const addAddressBtn = document.getElementById('add-address-btn')
-const addressInput = document.querySelector('input[name="address"]')
+const addressInput = document.querySelector('address')
 const tspProblemRadio = document.getElementById("tsp-problem")
 const cvrpProblemRadio = document.getElementById("cvrp-problem")
 
@@ -48,7 +50,7 @@ function displayAddresses() {
                 <div class="py-4 mb-2 ${(index != addressesList.length - 1) ? 'border-bottom border-white' : ''}">
                     <div class="fs-5 d-flex align-items-center">
                         <span>${address}</span>
-                        <button data-address-index="${index}" type="button" class="rm-address-btn btn btn-outline-danger btn-sm h-50">
+                        <button data-address-index="${index}" type="button" class="ms-3 rm-address-btn btn btn-outline-danger btn-sm h-50">
                             <i class="bi bi-x-lg"></i>
                         </button>
                     </div>
@@ -134,7 +136,10 @@ function addressesListForRequest() {
     let addressesList = JSON.parse(addressesListJson)
     let result = []
     addressesList.forEach(addrStr => {
-        result.push({ full_address: addrStr })
+        result.push({
+            full_address: addrStr,
+            type: "oneStringAddress"
+        })
     })
 
     return result
@@ -158,6 +163,7 @@ async function solveTSP() {
         },
         body: JSON.stringify({
             addresses: addressesListForRequest(),
+            optimization_type: document.querySelector('input[name="optimization-type"]:checked').value,
             depot: document.querySelector('.is-depot-cb:checked').dataset.addressIndex
         })
     });
@@ -219,6 +225,7 @@ async function solveCVRP() {
         },
         body: JSON.stringify({
             addresses: addressesListForRequest(),
+            optimization_type: document.querySelector('input[name="optimization-type"]:checked').value,
             demands: Array.from(document.querySelectorAll('.demand')).map(demand => demand.value),
             vehicle_number: document.getElementById("vehicle-count").value,
             vehicle_capacities: Array.from(document.getElementById('vehicle-capacity').value.split(',')).map(capacity => parseInt(capacity.trim())),
@@ -287,21 +294,91 @@ async function initMap(solution) {
 
 }
 
+
 function handleSolution(solution) {
     let solutionArea = document.getElementById('solution-area')
+
     solutionArea.innerHTML = `
         <h1 class="text-white text-center py-3">Результаты</h1>
         <div id="map-container">
             <div id="map" style="width: 600px; height: 600px" class="w-100 px-5"></div>
         </div>
-        <div class="my-4 w-100 d-flex justify-content-center">
-            <button type="button" class="btn btn-outline-light d-flex align-items-center px-5 border border-white border-3 rounded-pill">
-                <i class="bi bi-filetype-xlsx fs-2 me-3"></i>
-                <span class="fs-5">Скачать решение</span>
-            </button>
+        <div class="my-4 w-100" id="solution-actions">
+            <div class="d-flex justify-content-center">
+                <button id="download-solution" type="button" class="btn btn-outline-light d-flex align-items-center px-5 border border-white border-3 rounded-pill">
+                    <i class="bi bi-filetype-xlsx fs-2 me-3"></i>
+                    <span class="fs-5">Скачать решение</span>
+                </button>
+                <button value="${JSON.stringify(solution).replace(/"/g, '&quot;')}" id="save-solution-btn" type="button" class="ms-2 btn btn-outline-primary d-flex align-items-center px-5 border border-primary border-3 rounded-pill">
+                    <i class="bi bi-download fs-4 me-2"></i>
+                    <span class="fs-5">Сохранить решение</span>
+                </button>
+            </div>
+            <div class="mt-3 w-100 d-flex justify-content-center" id="solution-name-block"></div>
         </div>
     `
+
+    
+    function addListenerToSaveBtn() {
+        document.getElementById("download-solution").addEventListener('click', downloadFile)
+
+        const saveSolutionBtn = document.getElementById("save-solution-btn")
+        saveSolutionBtn.addEventListener('click', () => {
+
+            let solutionNameBlock = document.getElementById("solution-name-block")
+            solutionNameBlock.innerHTML = `
+                <div class="w-50">
+                    <label class="form-label ms-2" for="solution-name">Название</label>
+                    <div class="input-group ms-2">
+                        <input type="text" class="me-2 form-control border-white bg-black border border-light border-3 rounded-pill text-white" id="solution-name">
+                        <button class="btn btn-outline-success rounded-0 border border-3 border-success" type="button" id="confirm-save">
+                            <i class="bi bi-check2"></i>
+                        </button>
+                        <button class="btn btn-outline-danger rounded-0 border border-3 border-danger" type="button" id="cancel-save">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+                </div>
+            `
+            
+            document.getElementById('confirm-save').addEventListener('click', async () => {
+                const config = await loadConfig()
+                const response = await fetch(`${config.spring_app_address}/api/v1/solution`, {
+                    method: 'POST',
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Accept": "*/*",
+                        Authorization: `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({
+                        name: document.getElementById('solution-name').value,
+                        solutionJson: saveSolutionBtn.value.replace('&quot;', /"/g)
+                    })
+                });
+
+                if (response.ok) {
+                    if (solutionNameBlock) {
+                        solutionNameBlock.innerHTML = null
+                    }
+                    saveSolutionBtn.disabled = true
+                    saveSolutionBtn.innerHTML = `
+                        <i class="bi bi-check2 fs-3 me-1"></i>
+                        <span class="fs-5">Сохранено</span>
+                    `
+                }
+            })
+
+            document.getElementById("cancel-save").addEventListener('click', () => {
+                if (solutionNameBlock) {
+                    solutionNameBlock.innerHTML = null
+                    addListenerToSaveBtn()
+                }
+            })
+        })
+    }
+
     initMap(solution)
+    addListenerToSaveBtn()
 }
 
 
@@ -310,6 +387,7 @@ async function listenOptimizeRouteBtn() {
     const errMessage = document.getElementById("err-message")
     optimizeBtn.addEventListener('click', async () => {
         errMessage.innerHTML = null
+        optimizeBtn.disabled = true
         try {
             validateAddresses()
             validateChoosenDepot()
@@ -328,6 +406,7 @@ async function listenOptimizeRouteBtn() {
                 <span>${err.message}</span>
             `
         }
+        optimizeBtn.disabled = false
     })
 }
 
