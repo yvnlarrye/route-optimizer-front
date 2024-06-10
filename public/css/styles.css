@@ -3,3 +3,8 @@ body {
     font-weight: 300;
     font-style: light;
 }
+
+#solution-list {
+    height: 500px;
+    overflow: auto;
+}

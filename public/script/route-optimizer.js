@@ -1,10 +1,9 @@
 import { loadConfig } from "./utils.js"
-import { getRandomColor } from "./utils.js"
-import { getUniqueFilename } from "./utils.js"
 import { downloadFile } from "./utils.js"
+import { initMap } from "./utils.js"
 
 const addAddressBtn = document.getElementById('add-address-btn')
-const addressInput = document.querySelector('address')
+const addressInput = document.getElementById('address')
 const tspProblemRadio = document.getElementById("tsp-problem")
 const cvrpProblemRadio = document.getElementById("cvrp-problem")
 
@@ -241,60 +240,6 @@ async function solveCVRP() {
 }
 
 
-
-async function initMap(solution) {
-    ymaps.ready(init);
-
-    function init() {
-        let centerCoords = solution.routes[0].nodes[0].location
-        var myMap = new ymaps.Map("map", {
-            center: [centerCoords.lat, centerCoords.lon],
-            zoom: 10
-        });
-
-        solution.routes.forEach(route => {
-            var placemarks = [];
-
-            let currentRouteColor = getRandomColor()
-
-            route.nodes.forEach((node, index) => {
-                let coords = [node.location.lat, node.location.lon];
-                var placemark = new ymaps.Placemark(coords, {
-                    iconContent: (index + 1).toString()
-                }, {
-                    preset: 'islands#blueCircleIconWithCaption',
-                    iconColor: currentRouteColor
-                });
-
-                placemarks.push(coords);
-                if (index != route.nodes.length - 1) {
-                    myMap.geoObjects.add(placemark);
-                }
-            });
-
-            var multiRoute = new ymaps.multiRouter.MultiRoute({
-                referencePoints: placemarks,
-                params: {
-                    routingMode: 'auto'
-                }
-            }, {
-                wayPointStartIconLayout: 'default#image',
-                wayPointFinishIconLayout: 'default#image',
-                wayPointIconLayout: 'default#image',
-                wayPointStartIconImageHref: '',
-                wayPointFinishIconImageHref: '',
-                wayPointIconImageHref: '',
-                routeStrokeWidth: 5,
-                routeActiveStrokeColor: currentRouteColor
-            });
-
-            myMap.geoObjects.add(multiRoute);
-        })
-    }
-
-}
-
-
 function handleSolution(solution) {
     let solutionArea = document.getElementById('solution-area')
 
@@ -305,11 +250,12 @@ function handleSolution(solution) {
         </div>
         <div class="my-4 w-100" id="solution-actions">
             <div class="d-flex justify-content-center">
+                <input value="${JSON.stringify(solution).replace(/"/g, '&quot;')}" type="hidden" id="solution-data-json">
                 <button id="download-solution" type="button" class="btn btn-outline-light d-flex align-items-center px-5 border border-white border-3 rounded-pill">
                     <i class="bi bi-filetype-xlsx fs-2 me-3"></i>
                     <span class="fs-5">Скачать решение</span>
                 </button>
-                <button value="${JSON.stringify(solution).replace(/"/g, '&quot;')}" id="save-solution-btn" type="button" class="ms-2 btn btn-outline-primary d-flex align-items-center px-5 border border-primary border-3 rounded-pill">
+                <button id="save-solution-btn" type="button" class="ms-2 btn btn-outline-primary d-flex align-items-center px-5 border border-primary border-3 rounded-pill">
                     <i class="bi bi-download fs-4 me-2"></i>
                     <span class="fs-5">Сохранить решение</span>
                 </button>
@@ -352,7 +298,7 @@ function handleSolution(solution) {
                     },
                     body: JSON.stringify({
                         name: document.getElementById('solution-name').value,
-                        solutionJson: saveSolutionBtn.value.replace('&quot;', /"/g)
+                        solutionJson: document.getElementById("solution-data-json").value.replace('&quot;', /"/g)
                     })
                 });
 

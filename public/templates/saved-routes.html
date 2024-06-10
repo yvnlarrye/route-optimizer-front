@@ -16,22 +16,26 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Raleway:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+
+    <script src="https://api-maps.yandex.ru/2.1/?apikey=0bfeec7e-599c-470e-9810-b529e52345e1&lang=ru_RU"></script>
   </head>
 
   <body class="bg-black">
     <div class="wrapper m-0 p-0">
       <div id="header"></div>
       <main class="w-100 p-0">
-        <div class="container w-75 mt-5 text-white">
+        <div class="container w-75 my-5 text-white">
           <div class="border border-3 rounded-5 p-5">
             <div class="row my-4">
-              <div class="col-6">
-                <div class="p-3" id="solution-list">
-                    <span>Здесь отобразятся сохраненные решения</span>
+              <div class="col-7 pe-5">
+                <div class="wrapper mt-2 py-t" id="solution-details">
+                    <div class="text-center w-100 py-1">
+                        <span>Здесь отобразятся детали решения</span>
+                    </div>
                 </div>
               </div>
-              <div class="col-6">
-                <div class="wrapper my-5 py-5 container w-75" id="solution-area"></div>
+							<div class="col-5 border-start border-white">
+                <div class="wrapper my-2 py-1" id="solution-list"></div>
               </div>
             </div>
           </div>
@@ -45,6 +49,7 @@
       integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
       crossorigin="anonymous"></script>
     <script src="/script/header.js" type="module"></script>
+    <script src="/script/saved-routes.js" type="module"></script>
   </body>
 
 </html>
