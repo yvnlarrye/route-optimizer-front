@@ -59,7 +59,7 @@ async function init() {
             let solutionData = JSON.parse(solution.solutionJson)
     
             solutionListElement.innerHTML += `
-                <div data-id="${solution.id}" class="btn btn-outline-light border-0 p-0 m-0 w-100 solution">
+                <div data-id="${solution.id}" class="btn btn-outline-light border-0 rounded-0 p-0 m-0 w-100 solution">
                     <div class="${(index != solutionResponse.solutions.length - 1) ? 'border-bottom border-white' : ''} py-3 px-3 position-relative">
                         <i data-id="${solution.id}" class="rm-solution bi bi-x position-absolute top-0 end-0 fs-3 z-index-20"></i>
                         <div class="fs-5 fw-bold text-start">${index + 1}. ${solution.name}</div>
